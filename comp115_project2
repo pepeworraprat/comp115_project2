@@ -1,0 +1,372 @@
+"""
+Project 2 - Data Analysis Project
+BC Housing Affordability and Rental Subsidies
+
+Name: Caroline Wong & Worraprat Wuttisan
+Course: COMP 115
+Date: 01 April 2026
+
+Description:
+This program analyzes BC Census 2016 housing data.
+
+Task 1:
+Find CHSA areas where more than 50% of renters spend 30% or more
+of their income on shelter costs. Then examine income, rent, and
+subsidization rates in those areas.
+
+Task 2:
+Compare rental subsidization rates across the five PHA regions.
+
+Extra features:
+- Sorts the high-burden areas from highest to lowest
+- Shows top 5 most unaffordable areas
+- Calculates averages
+- Creates bar charts
+"""
+
+import csv
+import matplotlib.pyplot as plt
+
+
+def read_csv_file(filename):
+    """
+    Reads the CSV file and returns a list of dictionaries.
+
+    Parameters:
+        filename (str): the CSV file name
+
+    Returns:
+        list: a list of rows as dictionaries
+    """
+    data = []
+
+    with open(filename, "r", encoding="utf-8-sig") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            # Convert numeric values from strings to floats
+            row["shelt_rent_subsidized_rate"] = float(row["shelt_rent_subsidized_rate"])
+            row["shelt_rent_30plus_rate"] = float(row["shelt_rent_30plus_rate"])
+            row["shelt_rent_mo_cost_mean"] = float(row["shelt_rent_mo_cost_mean"])
+            row["shelt_rent_mo_cost_median"] = float(row["shelt_rent_mo_cost_median"])
+            row["income_total_mean"] = float(row["income_total_mean"])
+            row["income_total_median"] = float(row["income_total_median"])
+            row["income_after_tax_mean"] = float(row["income_after_tax_mean"])
+            row["income_after_tax_median"] = float(row["income_after_tax_median"])
+            data.append(row)
+
+    return data
+
+
+def print_basic_info(data):
+    """
+    Prints basic information about the dataset.
+
+    Parameters:
+        data (list): list of dictionaries
+    """
+    print("=" * 70)
+    print("BC CENSUS 2016 DATASET OVERVIEW")
+    print("=" * 70)
+    print("Number of rows:", len(data))
+
+    if len(data) > 0:
+        print("Number of columns:", len(data[0]))
+        print("\nColumn names:")
+        for key in data[0]:
+            print("-", key)
+    print()
+
+
+def find_high_burden_areas(data):
+    """
+    Finds areas where shelt_rent_30plus_rate > 50.
+
+    Parameters:
+        data (list): list of dictionaries
+
+    Returns:
+        list: filtered list of high-burden areas
+    """
+    high_burden = []
+
+    for row in data:
+        if row["shelt_rent_30plus_rate"] > 50:
+            high_burden.append(row)
+
+    # Sort from highest to lowest shelt_rent_30plus_rate
+    high_burden.sort(key=get_30plus_rate, reverse=True)
+
+    return high_burden
+
+
+def get_30plus_rate(row):
+    """
+    Returns the shelt_rent_30plus_rate of a row.
+
+    Parameters:
+        row (dict): one area row
+
+    Returns:
+        float: shelt_rent_30plus_rate
+    """
+    return row["shelt_rent_30plus_rate"]
+
+
+def print_task1_results(high_burden):
+    """
+    Prints Task 1 results and averages.
+
+    Parameters:
+        high_burden (list): filtered high-burden areas
+    """
+    print("=" * 70)
+    print("TASK 1 ANALYSIS")
+    print("=" * 70)
+
+    print("Areas where more than 50% of renters spend 30% or more")
+    print("of their income on shelter costs:\n")
+
+    for row in high_burden:
+        print("CHSA:", row["chsa"])
+        print("PHA:", row["pha"])
+        print("Subsidized rate:", row["shelt_rent_subsidized_rate"], "%")
+        print("30%+ shelter cost rate:", row["shelt_rent_30plus_rate"], "%")
+        print("Mean monthly shelter cost: $", row["shelt_rent_mo_cost_mean"])
+        print("Median monthly shelter cost: $", row["shelt_rent_mo_cost_median"])
+        print("Mean total income: $", row["income_total_mean"])
+        print("Median total income: $", row["income_total_median"])
+        print("Mean after-tax income: $", row["income_after_tax_mean"])
+        print("Median after-tax income: $", row["income_after_tax_median"])
+        print("-" * 70)
+
+    print("Total number of high-burden areas:", len(high_burden))
+    print()
+
+    if len(high_burden) > 0:
+        avg_subsidized = average_value(high_burden, "shelt_rent_subsidized_rate")
+        avg_30plus = average_value(high_burden, "shelt_rent_30plus_rate")
+        avg_rent = average_value(high_burden, "shelt_rent_mo_cost_mean")
+        avg_income = average_value(high_burden, "income_total_mean")
+
+        print("Average values for high-burden areas:")
+        print("Average subsidized rate:", round(avg_subsidized, 2), "%")
+        print("Average 30%+ shelter cost rate:", round(avg_30plus, 2), "%")
+        print("Average mean monthly shelter cost: $", round(avg_rent, 2))
+        print("Average mean total income: $", round(avg_income, 2))
+        print()
+
+        print("Top 5 most unaffordable areas:")
+        top_five = high_burden[:5]
+        for row in top_five:
+            print(
+                row["chsa"],
+                "|",
+                row["pha"],
+                "| 30%+ rate:",
+                row["shelt_rent_30plus_rate"],
+                "% | Subsidized rate:",
+                row["shelt_rent_subsidized_rate"],
+                "%"
+            )
+        print()
+
+
+def average_value(data, key):
+    """
+    Calculates the average of one numeric column.
+
+    Parameters:
+        data (list): list of dictionaries
+        key (str): column name
+
+    Returns:
+        float: average value
+    """
+    total = 0
+
+    for row in data:
+        total += row[key]
+
+    return total / len(data)
+
+
+def compare_pha_regions(data):
+    """
+    Compares subsidized rates across PHA regions.
+
+    Parameters:
+        data (list): list of dictionaries
+
+    Returns:
+        dict: average subsidized rate by region
+    """
+    region_totals = {}
+    region_counts = {}
+
+    for row in data:
+        region = row["pha"]
+        subsidized_rate = row["shelt_rent_subsidized_rate"]
+
+        if region not in region_totals:
+            region_totals[region] = 0
+            region_counts[region] = 0
+
+        region_totals[region] += subsidized_rate
+        region_counts[region] += 1
+
+    region_averages = {}
+
+    for region in region_totals:
+        region_averages[region] = region_totals[region] / region_counts[region]
+
+    return region_averages
+
+
+def print_task2_results(region_averages):
+    """
+    Prints Task 2 results.
+
+    Parameters:
+        region_averages (dict): average subsidized rate by region
+    """
+    print("=" * 70)
+    print("TASK 2 ANALYSIS")
+    print("=" * 70)
+    print("Average rental subsidization rate by PHA region:\n")
+
+    for region in region_averages:
+        print(region + ":", round(region_averages[region], 2), "%")
+
+    highest_region = max(region_averages, key=region_averages.get)
+    lowest_region = min(region_averages, key=region_averages.get)
+
+    print()
+    print("Region with highest average subsidized rate:", highest_region)
+    print("Highest value:", round(region_averages[highest_region], 2), "%")
+    print("Region with lowest average subsidized rate:", lowest_region)
+    print("Lowest value:", round(region_averages[lowest_region], 2), "%")
+    print()
+
+
+def create_subsidized_chart(region_averages):
+    """
+    Creates a bar chart for average subsidized rate by region.
+
+    Parameters:
+        region_averages (dict): average subsidized rate by region
+    """
+    regions = list(region_averages.keys())
+    averages = list(region_averages.values())
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(regions, averages)
+    plt.title("Average Rental Subsidized Rate by PHA Region")
+    plt.xlabel("PHA Region")
+    plt.ylabel("Average Subsidized Rate (%)")
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+    plt.show()
+
+
+def create_30plus_chart(data):
+    """
+    Creates a bar chart for average shelt_rent_30plus_rate by region.
+
+    Parameters:
+        data (list): list of dictionaries
+    """
+    region_totals = {}
+    region_counts = {}
+
+    for row in data:
+        region = row["pha"]
+        burden_rate = row["shelt_rent_30plus_rate"]
+
+        if region not in region_totals:
+            region_totals[region] = 0
+            region_counts[region] = 0
+
+        region_totals[region] += burden_rate
+        region_counts[region] += 1
+
+    region_averages = {}
+    for region in region_totals:
+        region_averages[region] = region_totals[region] / region_counts[region]
+
+    regions = list(region_averages.keys())
+    averages = list(region_averages.values())
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(regions, averages)
+    plt.title("Average 30%+ Shelter Cost Rate by PHA Region")
+    plt.xlabel("PHA Region")
+    plt.ylabel("Average shelt_rent_30plus_rate (%)")
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+    plt.show()
+
+
+def print_conclusion(high_burden, region_averages):
+    """
+    Prints final project conclusion.
+
+    Parameters:
+        high_burden (list): high-burden areas
+        region_averages (dict): average subsidized rate by region
+    """
+    print("=" * 70)
+    print("FINAL CONCLUSION")
+    print("=" * 70)
+
+    if len(high_burden) > 0:
+        avg_rent = average_value(high_burden, "shelt_rent_mo_cost_mean")
+        avg_income = average_value(high_burden, "income_total_mean")
+        avg_subsidy = average_value(high_burden, "shelt_rent_subsidized_rate")
+
+        print("There are", len(high_burden), "CHSA areas where more than 50%")
+        print("of renters spend 30% or more of their income on shelter costs.")
+        print()
+
+        print("These areas tend to have:")
+        print("- average monthly shelter cost around $", round(avg_rent, 2))
+        print("- average total income around $", round(avg_income, 2))
+        print("- average subsidized rate around", round(avg_subsidy, 2), "%")
+        print()
+
+        print("This suggests that some areas may still face housing")
+        print("affordability problems even when subsidization is present.")
+        print()
+
+    highest_region = max(region_averages, key=region_averages.get)
+    lowest_region = min(region_averages, key=region_averages.get)
+
+    print("Subsidization rates are different across the five PHA regions.")
+    print(highest_region, "has the highest average subsidized rate, while")
+    print(lowest_region, "has the lowest average subsidized rate.")
+    print()
+    print("Overall, housing affordability and subsidization are not")
+    print("evenly distributed across BC.")
+
+
+def main():
+    """
+    Main function of the program.
+    """
+    filename = "BC Census 2016 data.csv"
+
+    data = read_csv_file(filename)
+    print_basic_info(data)
+
+    high_burden = find_high_burden_areas(data)
+    print_task1_results(high_burden)
+
+    region_averages = compare_pha_regions(data)
+    print_task2_results(region_averages)
+
+    create_subsidized_chart(region_averages)
+    create_30plus_chart(data)
+
+    print_conclusion(high_burden, region_averages)
+
+
+main()
