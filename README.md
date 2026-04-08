@@ -40,12 +40,11 @@ Includes:
 
 # Output 
 The program prints:
-
-	•	Dataset overview
-	•	Task 1 analysis (high-burden areas)
-	•	Top 5 most unaffordable areas
-	•	Task 2 comparison of PHA regions
-	•	Bar chart (subsidized rates by region, 30%+ shelter cost rates by region)
+•	Dataset overview
+•	Task 1 analysis (high-burden areas)
+•	Top 5 most unaffordable areas
+•	Task 2 comparison of PHA regions
+•	Bar chart (subsidized rates by region, 30%+ shelter cost rates by region)
 
 
 ## Authors 
