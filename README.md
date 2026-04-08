@@ -48,6 +48,5 @@ The program prints:
 
 
 ## Authors 
-Worraprat Wuttisan
-Caroline Wong
+Worraprat Wuttisan and Caroline Wong
   
