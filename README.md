@@ -35,7 +35,7 @@ Includes:
 # How to Install
 1. Make sure Python 3 installed
 2. Install matplotlib (pip3 install matplotlib in terminal)
-3. Put CSV file in the same folder as python file
+3. Put "BC Census 2016 data.csv" file in the same folder as python file
 4. Run
 
 # Output 
