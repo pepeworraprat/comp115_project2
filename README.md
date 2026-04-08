@@ -18,7 +18,7 @@ It also calculates averages, ranks the most unaffordable areas, and creates bar 
 
 ## Dataset
 File used:
-`BC Census 2016 data.csv`
+`BC Census 2016 data.csv.`
 
 Includes:
 - CHSA area
@@ -33,9 +33,9 @@ Includes:
 - matplotlib
 
 # How to Install
-1. Make sure Python 3 installed
+1. Make sure Python 3 is installed
 2. Install matplotlib (pip3 install matplotlib in terminal)
-3. Put "BC Census 2016 data.csv" file in the same folder as python file
+3. Put the "BC Census 2016 data.csv" file in the same folder as python file
 4. Run
 
 # Output 
@@ -47,5 +47,7 @@ The program prints:
 	•	Bar chart (subsidized rates by region, 30%+ shelter cost rates by region)
 
 
-  
+## Authors 
+Worraprat Wuttisan
+Caroline Wong
   
